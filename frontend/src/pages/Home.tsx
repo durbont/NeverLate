@@ -5,10 +5,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getCommutes, createCommute, deleteCommute, reorderCommutes, Commute } from '../api/commutes'
+import { getCommutes, createCommute, updateCommute, deleteCommute, reorderCommutes, Commute } from '../api/commutes'
 import { logout } from '../api/auth'
 import { getLineById } from '../data/subway-data'
 import NewCommuteModal from '../components/NewCommuteModal'
+import EditCommuteModal from '../components/EditCommuteModal'
+import CommuteDetail from '../components/CommuteDetail'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -18,6 +20,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [viewTarget, setViewTarget] = useState<Commute | null>(null)
+  const [editTarget, setEditTarget] = useState<Commute | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Commute | null>(null)
 
   // Drag-and-drop state
@@ -34,11 +38,23 @@ export default function Home() {
     name: string
     startAddress: string
     endAddress: string
-    stops: { lineIds: string[]; stopId: string; stopName: string; direction: string }[]
+    stops: { lineId: string; stopId: string; stopName: string; direction: string }[]
   }) {
     const commute = await createCommute(data)
     setCommutes(prev => [commute, ...prev])
     setShowModal(false)
+  }
+
+  async function handleUpdateCommute(data: {
+    name: string
+    startAddress: string
+    endAddress: string
+    stops: { lineId: string; stopId: string; stopName: string; direction: string }[]
+  }) {
+    if (!editTarget) return
+    const updated = await updateCommute(editTarget.id, data)
+    setCommutes(prev => prev.map(c => c.id === updated.id ? updated : c))
+    setEditTarget(null)
   }
 
   async function handleDelete(id: number) {
@@ -143,10 +159,12 @@ export default function Home() {
                   onDragOver={e => handleDragOver(e, commute.id)}
                   onDrop={() => handleDrop(commute.id)}
                   onDragEnd={() => { draggingId.current = null; setDragOverId(null) }}
+                  onClick={() => setViewTarget(commute)}
                   style={{
                     ...styles.commuteCard,
                     ...(isOver ? styles.commuteCardOver : {}),
                     opacity: draggingId.current === commute.id ? 0.4 : 1,
+                    cursor: 'pointer',
                   }}
                 >
                   {/* Drag handle */}
@@ -164,15 +182,23 @@ export default function Home() {
                     )}
                     {commute.stops.length > 0 && (
                       <div style={styles.stopBadges}>
-                        {commute.stops.map((stop, i) => {
-                          const primaryLine = getLineById(stop.lineIds[0])
+                        {/* Group stops by stopName+direction so co-located trains share a row */}
+                        {Object.values(
+                          commute.stops.reduce((groups, stop) => {
+                            const key = `${stop.stopName}-${stop.direction}`
+                            if (!groups[key]) groups[key] = { stop, lineIds: [] }
+                            groups[key].lineIds.push(stop.lineId)
+                            return groups
+                          }, {} as Record<string, { stop: typeof commute.stops[0], lineIds: string[] }>)
+                        ).map(({ stop, lineIds }, i) => {
+                          const primaryLine = getLineById(lineIds[0])
                           const dirLabel = stop.direction === 'N'
-                            ? (primaryLine?.terminalN ?? 'Terminal N')
-                            : (primaryLine?.terminalS ?? 'Terminal S')
+                            ? (primaryLine?.labelN ?? primaryLine?.terminalN ?? '')
+                            : (primaryLine?.labelS ?? primaryLine?.terminalS ?? '')
                           return (
                             <div key={i} style={styles.stopBadge}>
                               <div style={styles.lineDots}>
-                                {stop.lineIds.map(lineId => {
+                                {lineIds.map(lineId => {
                                   const line = getLineById(lineId)
                                   return (
                                     <span key={lineId} style={{
@@ -186,7 +212,8 @@ export default function Home() {
                                 })}
                               </div>
                               <span style={styles.stopBadgeText}>
-                                {stop.stopName} · {dirLabel}
+                                {stop.stopName}
+                                {dirLabel && <span style={styles.dirLabel}> · {dirLabel}</span>}
                               </span>
                             </div>
                           )
@@ -195,13 +222,19 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* Right side: date + delete */}
+                  {/* Right side: date + actions */}
                   <div style={styles.cardRight}>
                     <span style={styles.commuteDate}>
                       {new Date(commute.createdAt).toLocaleDateString()}
                     </span>
                     <button
-                      onClick={() => setDeleteTarget(commute)}
+                      onClick={e => { e.stopPropagation(); setEditTarget(commute) }}
+                      style={styles.editButton}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); setDeleteTarget(commute) }}
                       style={styles.deleteButton}
                     >
                       Delete
@@ -214,10 +247,25 @@ export default function Home() {
         )}
       </div>
 
+      {viewTarget && (
+        <CommuteDetail
+          commute={viewTarget}
+          onClose={() => setViewTarget(null)}
+        />
+      )}
+
       {showModal && (
         <NewCommuteModal
           onClose={() => setShowModal(false)}
           onSubmit={handleCreateCommute}
+        />
+      )}
+
+      {editTarget && (
+        <EditCommuteModal
+          commute={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSubmit={handleUpdateCommute}
         />
       )}
 
@@ -420,6 +468,9 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '0.8125rem',
     color: '#4a5568',
   },
+  dirLabel: {
+    color: '#718096',
+  },
   cardRight: {
     display: 'flex',
     flexDirection: 'column',
@@ -430,6 +481,16 @@ const styles: Record<string, React.CSSProperties> = {
   commuteDate: {
     fontSize: '0.8125rem',
     color: '#a0aec0',
+  },
+  editButton: {
+    padding: '0.3rem 0.75rem',
+    fontSize: '0.8125rem',
+    fontWeight: 500,
+    color: '#3182ce',
+    backgroundColor: 'transparent',
+    border: '1px solid #bee3f8',
+    borderRadius: '6px',
+    cursor: 'pointer',
   },
   deleteButton: {
     padding: '0.3rem 0.75rem',

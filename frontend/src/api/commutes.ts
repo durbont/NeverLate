@@ -6,7 +6,7 @@
 import axios from 'axios'
 
 export interface CommuteStop {
-  lineIds: string[]
+  lineId: string
   stopId: string
   stopName: string
   direction: string
@@ -25,7 +25,7 @@ export interface CreateCommutePayload {
   name: string
   startAddress: string
   endAddress: string
-  stops: CommuteStop[]
+  stops: { lineId: string; stopId: string; stopName: string; direction: string }[]
 }
 
 function authHeaders() {
@@ -40,6 +40,11 @@ export async function getCommutes(): Promise<Commute[]> {
 
 export async function createCommute(payload: CreateCommutePayload): Promise<Commute> {
   const response = await axios.post<Commute>('/api/commutes', payload, { headers: authHeaders() })
+  return response.data
+}
+
+export async function updateCommute(id: number, payload: CreateCommutePayload): Promise<Commute> {
+  const response = await axios.put<Commute>(`/api/commutes/${id}`, payload, { headers: authHeaders() })
   return response.data
 }
 

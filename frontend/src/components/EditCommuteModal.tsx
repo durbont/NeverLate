@@ -1,10 +1,11 @@
-// Modal for creating a new commute in NeverLate.
-// Each stop entry monitors one subway line at one stop in one direction.
-// Multiple entries that share the same physical station are automatically
-// grouped together in the commute detail view.
+// Modal for editing an existing commute in NeverLate.
+// Pre-populates all fields from the existing commute.
+// Each stop entry monitors one subway line — trains at the same station
+// are automatically grouped in the commute detail view.
 
 import { useState, FormEvent } from 'react'
 import { subwayLines, getLineById } from '../data/subway-data'
+import { Commute } from '../api/commutes'
 
 interface StopEntry {
   lineId: string
@@ -14,6 +15,7 @@ interface StopEntry {
 }
 
 interface Props {
+  commute: Commute
   onClose: () => void
   onSubmit: (data: {
     name: string
@@ -23,11 +25,18 @@ interface Props {
   }) => Promise<void>
 }
 
-export default function NewCommuteModal({ onClose, onSubmit }: Props) {
-  const [name, setName] = useState('')
-  const [startAddress, setStartAddress] = useState('')
-  const [endAddress, setEndAddress] = useState('')
-  const [stops, setStops] = useState<StopEntry[]>([])
+export default function EditCommuteModal({ commute, onClose, onSubmit }: Props) {
+  const [name, setName] = useState(commute.name)
+  const [startAddress, setStartAddress] = useState(commute.startAddress ?? '')
+  const [endAddress, setEndAddress] = useState(commute.endAddress ?? '')
+  const [stops, setStops] = useState<StopEntry[]>(
+    commute.stops.map(s => ({
+      lineId: s.lineId,
+      stopId: s.stopId,
+      stopName: s.stopName,
+      direction: s.direction,
+    }))
+  )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -78,7 +87,7 @@ export default function NewCommuteModal({ onClose, onSubmit }: Props) {
     try {
       await onSubmit({ name, startAddress, endAddress, stops })
     } catch {
-      setError('Failed to create commute. Please try again.')
+      setError('Failed to save changes. Please try again.')
       setSubmitting(false)
     }
   }
@@ -87,7 +96,7 @@ export default function NewCommuteModal({ onClose, onSubmit }: Props) {
     <div style={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={styles.modal}>
         <div style={styles.header}>
-          <h2 style={styles.title}>New Commute</h2>
+          <h2 style={styles.title}>Edit Commute</h2>
           <button onClick={onClose} style={styles.closeButton}>✕</button>
         </div>
 
@@ -148,7 +157,6 @@ export default function NewCommuteModal({ onClose, onSubmit }: Props) {
               const lineData = stop.lineId ? getLineById(stop.lineId) : null
               return (
                 <div key={i} style={styles.stopCard}>
-                  {/* Line selection — radio style */}
                   <div style={styles.lineToggleSection}>
                     <div style={styles.lineToggleHeader}>
                       <span style={styles.smallLabel}>Select a line:</span>
@@ -178,7 +186,6 @@ export default function NewCommuteModal({ onClose, onSubmit }: Props) {
                     </div>
                   </div>
 
-                  {/* Stop + direction — only shown once a line is selected */}
                   {lineData && (
                     <div style={styles.stopRow}>
                       <div style={{ ...styles.stopField, flex: 2 }}>
@@ -234,7 +241,7 @@ export default function NewCommuteModal({ onClose, onSubmit }: Props) {
           <div style={styles.actions}>
             <button type="button" onClick={onClose} style={styles.cancelButton}>Cancel</button>
             <button type="submit" disabled={submitting} style={styles.submitButton}>
-              {submitting ? 'Creating...' : 'Create Commute'}
+              {submitting ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
