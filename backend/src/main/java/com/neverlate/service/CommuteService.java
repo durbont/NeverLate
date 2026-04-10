@@ -56,7 +56,37 @@ public class CommuteService {
             for (CommuteStopDto dto : request.stops()) {
                 CommuteStop stop = CommuteStop.builder()
                         .commute(commute)
-                        .lineIds(new java.util.ArrayList<>(dto.lineIds()))
+                        .lineId(dto.lineId())
+                        .stopId(dto.stopId())
+                        .stopName(dto.stopName())
+                        .direction(dto.direction())
+                        .build();
+                commute.getStops().add(stop);
+            }
+        }
+
+        return toResponse(commuteRepository.save(commute));
+    }
+
+    @Transactional
+    public CommuteResponse updateCommute(String email, Long id, CommuteRequest request) {
+        User user = findUser(email);
+        Commute commute = commuteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Commute not found"));
+        if (!commute.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You do not own this commute");
+        }
+
+        commute.setName(request.name());
+        commute.setStartAddress(request.startAddress());
+        commute.setEndAddress(request.endAddress());
+
+        commute.getStops().clear();
+        if (request.stops() != null) {
+            for (CommuteStopDto dto : request.stops()) {
+                CommuteStop stop = CommuteStop.builder()
+                        .commute(commute)
+                        .lineId(dto.lineId())
                         .stopId(dto.stopId())
                         .stopName(dto.stopName())
                         .direction(dto.direction())
@@ -104,7 +134,7 @@ public class CommuteService {
 
     private CommuteResponse toResponse(Commute commute) {
         List<CommuteStopDto> stops = commute.getStops().stream()
-                .map(s -> new CommuteStopDto(s.getLineIds(), s.getStopId(), s.getStopName(), s.getDirection()))
+                .map(s -> new CommuteStopDto(s.getLineId(), s.getStopId(), s.getStopName(), s.getDirection()))
                 .toList();
         return new CommuteResponse(
                 commute.getId(),

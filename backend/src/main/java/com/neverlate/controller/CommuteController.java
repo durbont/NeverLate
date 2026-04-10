@@ -5,6 +5,7 @@
 //
 // GET    /api/commutes          — returns all commutes for the logged-in user (ordered)
 // POST   /api/commutes          — creates a new commute
+// PUT    /api/commutes/{id}     — updates an existing commute owned by the logged-in user
 // DELETE /api/commutes/{id}     — deletes a commute owned by the logged-in user
 // PUT    /api/commutes/reorder  — updates the display order of the user's commutes
 
@@ -46,6 +47,21 @@ public class CommuteController {
             @Valid @RequestBody CommuteRequest request) {
         CommuteResponse response = commuteService.createCommute(userDetails.getUsername(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateCommute(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id,
+            @Valid @RequestBody CommuteRequest request) {
+        try {
+            CommuteResponse response = commuteService.updateCommute(userDetails.getUsername(), id, request);
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
+        } catch (AccessDeniedException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", ex.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")

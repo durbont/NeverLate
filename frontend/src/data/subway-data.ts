@@ -15,6 +15,8 @@ export interface SubwayLine {
   textColor: string    // Text color for the line badge
   terminalN: string    // Terminal stop for GTFS direction_id=1 (e.g. "Van Cortlandt Park–242 St")
   terminalS: string    // Terminal stop for GTFS direction_id=0 (e.g. "South Ferry")
+  labelN: string       // General directional label shown to users (e.g. "Uptown & The Bronx")
+  labelS: string       // General directional label shown to users (e.g. "Downtown & Brooklyn")
   stops: SubwayStop[]
 }
 
@@ -22,6 +24,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: '1', color: '#EE352E', textColor: '#fff',
     terminalN: 'Van Cortlandt Park–242 St', terminalS: 'South Ferry',
+    labelN: 'Uptown & The Bronx', labelS: 'Downtown & South Ferry',
     stops: [
       { id: '101', name: 'Van Cortlandt Park–242 St' },
       { id: '103', name: '238 St' },
@@ -66,6 +69,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: '2', color: '#EE352E', textColor: '#fff',
     terminalN: 'Wakefield–241 St', terminalS: 'Flatbush Av–Brooklyn College',
+    labelN: 'Uptown & The Bronx', labelS: 'Downtown & Brooklyn',
     stops: [
       { id: '201', name: 'Wakefield–241 St' },
       { id: '204', name: '233 St' },
@@ -123,6 +127,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: '3', color: '#EE352E', textColor: '#fff',
     terminalN: 'Harlem–148 St', terminalS: 'New Lots Av',
+    labelN: 'Uptown & The Bronx', labelS: 'Downtown & Brooklyn',
     stops: [
       { id: '301', name: 'Harlem–148 St' },
       { id: '302', name: '145 St' },
@@ -157,6 +162,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: '4', color: '#00933C', textColor: '#fff',
     terminalN: 'Woodlawn', terminalS: 'Utica Av',
+    labelN: 'Uptown & The Bronx', labelS: 'Downtown & Brooklyn',
     stops: [
       { id: '401', name: 'Woodlawn' },
       { id: '402', name: 'Mosholu Pkwy' },
@@ -175,9 +181,6 @@ export const subwayLines: SubwayLine[] = [
       { id: '415', name: '86 St' },
       { id: '416', name: '59 St' },
       { id: '417', name: 'Grand Central–42 St' },
-      { id: '418', name: '33 St' },
-      { id: '419', name: '28 St' },
-      { id: '420', name: '23 St' },
       { id: '421', name: '14 St–Union Sq' },
       { id: '422', name: 'Fulton St' },
       { id: '423', name: 'Wall St' },
@@ -196,6 +199,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: '5', color: '#00933C', textColor: '#fff',
     terminalN: 'Eastchester–Dyre Av', terminalS: 'Flatbush Av–Brooklyn College',
+    labelN: 'Uptown & The Bronx', labelS: 'Downtown & Brooklyn',
     stops: [
       { id: '501', name: 'Eastchester–Dyre Av' },
       { id: '502', name: 'Baychester Av' },
@@ -213,6 +217,7 @@ export const subwayLines: SubwayLine[] = [
       { id: '514', name: '86 St' },
       { id: '515', name: '59 St' },
       { id: '516', name: 'Grand Central–42 St' },
+      { id: '421', name: '14 St–Union Sq' },
       { id: '517', name: 'Fulton St' },
       { id: '518', name: 'Wall St' },
       { id: '519', name: 'Bowling Green' },
@@ -226,6 +231,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: '6', color: '#00933C', textColor: '#fff',
     terminalN: 'Pelham Bay Park', terminalS: 'Brooklyn Bridge–City Hall',
+    labelN: 'Uptown & The Bronx', labelS: 'Downtown',
     stops: [
       { id: '601', name: 'Pelham Bay Park' },
       { id: '602', name: 'Buhre Av' },
@@ -267,6 +273,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: '7', color: '#B933AD', textColor: '#fff',
     terminalN: 'Flushing–Main St', terminalS: '34 St–Hudson Yards',
+    labelN: 'Queens', labelS: 'Hudson Yards',
     stops: [
       { id: '701', name: 'Flushing–Main St' },
       { id: '702', name: 'Mets–Willets Point' },
@@ -293,6 +300,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'A', color: '#0039A6', textColor: '#fff',
     terminalN: 'Inwood–207 St', terminalS: 'Far Rockaway–Mott Av / Ozone Park–Lefferts Blvd',
+    labelN: 'Uptown & Washington Hts', labelS: 'Downtown & Brooklyn/Rockaway',
     stops: [
       { id: 'A01', name: 'Inwood–207 St' },
       { id: 'A02', name: '190 St' },
@@ -338,6 +346,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'C', color: '#0039A6', textColor: '#fff',
     terminalN: '168 St', terminalS: 'Euclid Av',
+    labelN: 'Uptown & Washington Hts', labelS: 'Downtown & Brooklyn',
     stops: [
       { id: 'A06', name: '168 St' },
       { id: 'A09', name: '145 St' },
@@ -367,6 +376,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'E', color: '#0039A6', textColor: '#fff',
     terminalN: 'Jamaica Center–Parsons/Archer', terminalS: 'World Trade Center',
+    labelN: 'Queens', labelS: 'Downtown',
     stops: [
       { id: 'G05', name: 'Jamaica–179 St' },
       { id: 'G06', name: '169 St' },
@@ -398,8 +408,8 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'B', color: '#FF6319', textColor: '#fff',
     terminalN: 'Bedford Park Blvd–Lehman College', terminalS: 'Brighton Beach',
+    labelN: 'Uptown & The Bronx', labelS: 'Downtown & Brooklyn',
     stops: [
-      { id: 'D01', name: 'Norwood–205 St' },
       { id: 'D03', name: 'Bedford Park Blvd' },
       { id: 'D04', name: 'Kingsbridge Rd' },
       { id: 'D05', name: 'Fordham Rd' },
@@ -446,6 +456,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'D', color: '#FF6319', textColor: '#fff',
     terminalN: 'Norwood–205 St', terminalS: 'Coney Island–Stillwell Av',
+    labelN: 'Uptown & The Bronx', labelS: 'Downtown & Coney Island',
     stops: [
       { id: 'D01', name: 'Norwood–205 St' },
       { id: 'D03', name: 'Bedford Park Blvd' },
@@ -459,6 +470,14 @@ export const subwayLines: SubwayLine[] = [
       { id: 'D11', name: '161 St–Yankee Stadium' },
       { id: 'D12', name: '155 St' },
       { id: 'D13', name: '145 St' },
+      { id: 'A09', name: '135 St' },
+      { id: 'A11', name: '125 St' },
+      { id: 'A14', name: '116 St' },
+      { id: 'A15', name: '110 St' },
+      { id: 'A17', name: '81 St–Museum of Natural History' },
+      { id: 'A18', name: '72 St' },
+      { id: 'A19', name: '59 St–Columbus Circle' },
+      { id: 'A21', name: '47–50 Sts–Rockefeller Ctr' },
       { id: 'D20', name: '42 St–Bryant Park' },
       { id: 'D21', name: '34 St–Herald Sq' },
       { id: 'D22', name: '23 St' },
@@ -473,6 +492,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'F', color: '#FF6319', textColor: '#fff',
     terminalN: 'Jamaica–179 St', terminalS: 'Coney Island–Stillwell Av',
+    labelN: 'Queens', labelS: 'Downtown & Brooklyn',
     stops: [
       { id: 'G05', name: 'Jamaica–179 St' },
       { id: 'G06', name: '169 St' },
@@ -488,8 +508,6 @@ export const subwayLines: SubwayLine[] = [
       { id: 'G16', name: 'Grand Av–Newtown' },
       { id: 'G18', name: 'Jackson Hts–Roosevelt Av' },
       { id: 'G19', name: '74 St–Broadway' },
-      { id: 'F09', name: '23 St–Ely Av' },
-      { id: 'F11', name: 'Queens Plaza' },
       { id: 'F12', name: 'Lexington Av–63 St' },
       { id: 'F14', name: '57 St' },
       { id: 'F15', name: '47–50 Sts–Rockefeller Ctr' },
@@ -523,6 +541,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'M', color: '#FF6319', textColor: '#fff',
     terminalN: 'Forest Hills–71 Av', terminalS: 'Middle Village–Metropolitan Av',
+    labelN: 'Queens', labelS: 'Downtown & Brooklyn',
     stops: [
       { id: 'G12', name: 'Forest Hills–71 Av' },
       { id: 'G13', name: '67 Av' },
@@ -555,6 +574,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'G', color: '#6CBE45', textColor: '#fff',
     terminalN: 'Court Sq', terminalS: 'Church Av',
+    labelN: 'Court Sq', labelS: 'Church Av',
     stops: [
       { id: 'G22', name: 'Court Sq' },
       { id: 'G24', name: 'Nassau Av' },
@@ -574,6 +594,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'J', color: '#996633', textColor: '#fff',
     terminalN: 'Jamaica Center–Parsons/Archer', terminalS: 'Broad St',
+    labelN: 'Queens', labelS: 'Downtown Manhattan',
     stops: [
       { id: 'J12', name: 'Jamaica Center–Parsons/Archer' },
       { id: 'J13', name: 'Sutphin Blvd–Archer Av–JFK Airport' },
@@ -593,7 +614,7 @@ export const subwayLines: SubwayLine[] = [
       { id: 'J29', name: 'Gates Av' },
       { id: 'J30', name: 'Kosciuszko St' },
       { id: 'J31', name: 'Myrtle Av' },
-      { id: 'J19', name: 'Flushing Av' },
+      { id: 'M19', name: 'Flushing Av' },
       { id: 'M18', name: 'Lorimer St' },
       { id: 'M16', name: 'Hewes St' },
       { id: 'M14', name: 'Marcy Av' },
@@ -605,6 +626,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'L', color: '#A7A9AC', textColor: '#fff',
     terminalN: '8 Av', terminalS: 'Canarsie–Rockaway Pkwy',
+    labelN: '8 Av (Manhattan)', labelS: 'Canarsie (Brooklyn)',
     stops: [
       { id: 'L01', name: '8 Av' },
       { id: 'L02', name: '6 Av' },
@@ -635,6 +657,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'N', color: '#FCCC0A', textColor: '#000',
     terminalN: 'Astoria–Ditmars Blvd', terminalS: 'Coney Island–Stillwell Av',
+    labelN: 'Queens', labelS: 'Downtown & Brooklyn',
     stops: [
       { id: 'R01', name: 'Astoria–Ditmars Blvd' },
       { id: 'R03', name: 'Astoria–Blvd' },
@@ -678,12 +701,13 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'Q', color: '#FCCC0A', textColor: '#000',
     terminalN: '96 St', terminalS: 'Coney Island–Stillwell Av',
+    labelN: 'Uptown', labelS: 'Downtown & Coney Island',
     stops: [
       { id: 'Q05', name: '96 St' },
       { id: 'Q04', name: '86 St' },
       { id: 'Q03', name: '72 St' },
       { id: 'R11', name: 'Lexington Av–63 St' },
-      { id: 'B08', name: '57 St–7 Av' },
+      { id: 'R14', name: '57 St–7 Av' },
       { id: 'R15', name: '49 St' },
       { id: 'R16', name: 'Times Sq–42 St' },
       { id: 'R17', name: '34 St–Herald Sq' },
@@ -719,6 +743,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'R', color: '#FCCC0A', textColor: '#000',
     terminalN: 'Astoria–Ditmars Blvd', terminalS: 'Bay Ridge–95 St',
+    labelN: 'Queens', labelS: 'Downtown & Brooklyn',
     stops: [
       { id: 'R01', name: 'Astoria–Ditmars Blvd' },
       { id: 'R03', name: 'Astoria–Blvd' },
@@ -759,6 +784,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'W', color: '#FCCC0A', textColor: '#000',
     terminalN: 'Astoria–Ditmars Blvd', terminalS: 'Whitehall St–South Ferry',
+    labelN: 'Queens', labelS: 'Downtown Manhattan',
     stops: [
       { id: 'R01', name: 'Astoria–Ditmars Blvd' },
       { id: 'R03', name: 'Astoria–Blvd' },
@@ -788,6 +814,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'Z', color: '#996633', textColor: '#fff',
     terminalN: 'Jamaica Center–Parsons/Archer', terminalS: 'Broad St',
+    labelN: 'Queens', labelS: 'Downtown Manhattan',
     stops: [
       { id: 'J12', name: 'Jamaica Center–Parsons/Archer' },
       { id: 'J14', name: '121 St' },
@@ -809,6 +836,7 @@ export const subwayLines: SubwayLine[] = [
   {
     id: 'SIR', color: '#0078C6', textColor: '#fff',
     terminalN: 'St George', terminalS: 'Tottenville',
+    labelN: 'St George', labelS: 'Tottenville',
     stops: [
       { id: 'S01', name: 'St George' },
       { id: 'S03', name: 'Tompkinsville' },

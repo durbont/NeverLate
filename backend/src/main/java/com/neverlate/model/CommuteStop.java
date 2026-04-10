@@ -1,8 +1,6 @@
-// JPA entity representing one departure stop associated with a commute.
-// A stop has a physical location (stopId, stopName, direction) plus a list of
-// subway lines the user wants to monitor there — e.g., the 1, 2, and 3 trains
-// all serve the same platform, so all three can be tracked in a single stop entry.
-// lineIds maps to MTA GTFS route_ids, used to filter the live arrival feed.
+// JPA entity representing one monitored train at a specific stop in a commute.
+// Each entry tracks a single subway line at one physical stop and direction.
+// Multiple entries with the same stopId are grouped together in the UI.
 
 package com.neverlate.model;
 
@@ -11,9 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "commute_stops")
@@ -31,18 +26,15 @@ public class CommuteStop {
     @JoinColumn(name = "commute_id", nullable = false)
     private Commute commute;
 
-    // One or more subway line IDs to monitor at this stop (e.g., ["1", "2", "3"])
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "commute_stop_lines", joinColumns = @JoinColumn(name = "commute_stop_id"))
+    // The subway line ID to monitor (e.g., "4", "L", "A")
     @Column(name = "line_id", nullable = false)
-    @Builder.Default
-    private List<String> lineIds = new ArrayList<>();
+    private String lineId;
 
-    // MTA GTFS stop_id for the physical station (e.g., "132") — used to query live arrivals
+    // MTA GTFS stop_id for the physical station (e.g., "626") — used to query live arrivals
     @Column(nullable = false)
     private String stopId;
 
-    // Human-readable stop name (e.g., "14 St")
+    // Human-readable stop name (e.g., "Grand Central–42 St")
     @Column(nullable = false)
     private String stopName;
 
