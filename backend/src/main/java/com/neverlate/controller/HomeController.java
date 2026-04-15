@@ -1,3 +1,5 @@
+package com.neverlate.controller;
+
 @Controller
 public class HomeController {
     @GetMapping("/")
