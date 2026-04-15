@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+const API_URL = import.meta.env.VITE_API_URL || ''
+
 function authHeaders() {
   const token = localStorage.getItem('token')
   return { Authorization: `Bearer ${token}` }
@@ -20,7 +22,7 @@ export interface LogsResponse {
 }
 
 export async function fetchCommuteLogs(commuteId: number, page = 0): Promise<LogsResponse> {
-  const res = await axios.get<LogsResponse>(`/api/commutes/${commuteId}/logs`, {
+  const res = await axios.get<LogsResponse>(`${API_URL}/api/commutes/${commuteId}/logs`, {
     headers: authHeaders(),
     params: { page },
   })
@@ -36,14 +38,14 @@ export interface CommuteStats {
 }
 
 export async function fetchCommuteStats(commuteId: number): Promise<CommuteStats> {
-  const res = await axios.get<CommuteStats>(`/api/commutes/${commuteId}/stats`, {
+  const res = await axios.get<CommuteStats>(`${API_URL}/api/commutes/${commuteId}/stats`, {
     headers: authHeaders(),
   })
   return res.data
 }
 
 export async function deleteCommuteLog(commuteId: number, logId: number): Promise<void> {
-  await axios.delete(`/api/commutes/${commuteId}/logs/${logId}`, {
+  await axios.delete(`${API_URL}/api/commutes/${commuteId}/logs/${logId}`, {
     headers: authHeaders(),
   })
 }
@@ -54,7 +56,7 @@ export async function saveCommuteLog(
   endedAt: number      // Unix epoch seconds
 ): Promise<void> {
   await axios.post(
-    `/api/commutes/${commuteId}/logs`,
+    `${API_URL}/api/commutes/${commuteId}/logs`,
     { startedAt, endedAt },
     { headers: authHeaders() }
   )

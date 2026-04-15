@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+const API_URL = import.meta.env.VITE_API_URL || ''
+
 export interface Arrival {
   lineId: string
   arrivalTime: number   // Unix epoch seconds, from MTA feed (unmodified)
@@ -22,7 +24,7 @@ export async function fetchArrivals(
   direction: string,
   lineIds: string[]
 ): Promise<ArrivalsResponse> {
-  const response = await axios.get<ArrivalsResponse>('/api/arrivals', {
+  const response = await axios.get<ArrivalsResponse>(`${API_URL}/api/arrivals`, {
     headers: authHeaders(),
     params: { stopId, direction, lineIds: lineIds.join(',') },
   })

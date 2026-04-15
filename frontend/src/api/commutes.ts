@@ -5,6 +5,8 @@
 
 import axios from 'axios'
 
+const API_URL = import.meta.env.VITE_API_URL || ''
+
 export interface CommuteStop {
   lineId: string
   stopId: string
@@ -34,24 +36,24 @@ function authHeaders() {
 }
 
 export async function getCommutes(): Promise<Commute[]> {
-  const response = await axios.get<Commute[]>('/api/commutes', { headers: authHeaders() })
+  const response = await axios.get<Commute[]>(`${API_URL}/api/commutes`, { headers: authHeaders() })
   return response.data
 }
 
 export async function createCommute(payload: CreateCommutePayload): Promise<Commute> {
-  const response = await axios.post<Commute>('/api/commutes', payload, { headers: authHeaders() })
+  const response = await axios.post<Commute>(`${API_URL}/api/commutes`, payload, { headers: authHeaders() })
   return response.data
 }
 
 export async function updateCommute(id: number, payload: CreateCommutePayload): Promise<Commute> {
-  const response = await axios.put<Commute>(`/api/commutes/${id}`, payload, { headers: authHeaders() })
+  const response = await axios.put<Commute>(`${API_URL}/api/commutes/${id}`, payload, { headers: authHeaders() })
   return response.data
 }
 
 export async function deleteCommute(id: number): Promise<void> {
-  await axios.delete(`/api/commutes/${id}`, { headers: authHeaders() })
+  await axios.delete(`${API_URL}/api/commutes/${id}`, { headers: authHeaders() })
 }
 
 export async function reorderCommutes(ids: number[]): Promise<void> {
-  await axios.put('/api/commutes/reorder', { ids }, { headers: authHeaders() })
+  await axios.put(`${API_URL}/api/commutes/reorder`, { ids }, { headers: authHeaders() })
 }
