@@ -8,43 +8,144 @@ import { useEffect, useState, useRef } from 'react'
 import { Commute } from '../api/commutes'
 import { getLineById } from '../data/subway-data'
 import { fetchArrivals, Arrival, ArrivalsResponse } from '../api/arrivals'
+import { fetchCommuteStats, CommuteStats } from '../api/logs'
+import CommuteLogsOverlay from './CommuteLogsOverlay'
+import './CommuteDetail.css'
 
 interface Props {
   commute: Commute
   onClose: () => void
+  isActive: boolean
+  elapsed: number
+  timerDisabled: boolean
+  onStart: () => void
+  onStop: () => Promise<void>
+  formatElapsed: (seconds: number) => string
 }
 
-export default function CommuteDetail({ commute, onClose }: Props) {
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  if (h > 0) return `${h}h ${m}m`
+  if (m > 0) return `${m}m ${s}s`
+  return `${s}s`
+}
+
+export default function CommuteDetail({ commute, onClose, isActive, elapsed, timerDisabled, onStart, onStop, formatElapsed }: Props) {
+  const [showLogs, setShowLogs] = useState(false)
+  const [stats, setStats] = useState<CommuteStats | null>(null)
+
+  function refreshStats() {
+    fetchCommuteStats(commute.id).then(setStats).catch(() => {})
+  }
+
+  useEffect(() => {
+    refreshStats()
+  }, [commute.id])
+
+  async function handleStop() {
+    await onStop()
+    refreshStats()
+  }
+
   return (
     <div style={styles.overlay}>
       {/* Header */}
-      <div style={styles.header}>
+      <div style={styles.header} className="nl-detail-header">
         <button onClick={onClose} style={styles.backButton}>← Back</button>
         <span style={styles.headerTitle}>Commute Details</span>
         <div style={{ width: '80px' }} />
       </div>
 
       {/* Content */}
-      <div style={styles.content}>
-        <h1 style={styles.commuteName}>{commute.name}</h1>
+      <div className="nl-detail-content">
+        <h1 className="nl-detail-name">{commute.name}</h1>
 
         {/* Route */}
         {(commute.startAddress || commute.endAddress) && (
           <div style={styles.section}>
             <span style={styles.sectionLabel}>Route</span>
             <div style={styles.routeCard}>
-              <div style={styles.routeStop}>
-                <span style={styles.routeDotGray} />
-                <span style={styles.routeAddress}>{commute.startAddress ?? '—'}</span>
-              </div>
-              <div style={styles.routeLine} />
-              <div style={styles.routeStop}>
-                <span style={styles.routeDotBlue} />
-                <span style={styles.routeAddress}>{commute.endAddress ?? '—'}</span>
-              </div>
+              <span style={styles.routeAddress}>{commute.startAddress ?? '—'}</span>
+              <span style={styles.routeArrow}>→</span>
+              <span style={styles.routeAddress}>{commute.endAddress ?? '—'}</span>
             </div>
           </div>
         )}
+
+        {/* Record */}
+        <div style={styles.section}>
+          <span style={styles.sectionLabel}>Record</span>
+          <div
+            className="nl-timer-card"
+            style={isActive ? { backgroundColor: '#ebf8ff', borderColor: '#bee3f8' } : undefined}
+          >
+            {isActive && (
+              <span className="nl-timer-elapsed">{formatElapsed(elapsed)}</span>
+            )}
+            <div className="nl-timer-card-right">
+              {isActive ? (
+                <button onClick={handleStop} className="nl-timer-stop-btn">⏹ Stop & Save</button>
+              ) : (
+                <button
+                  onClick={onStart}
+                  disabled={timerDisabled}
+                  className="nl-timer-start-btn"
+                  style={{
+                    opacity: timerDisabled ? 0.4 : 1,
+                    cursor: timerDisabled ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  ▶ Start Commute
+                </button>
+              )}
+              <button onClick={() => setShowLogs(true)} className="nl-view-history-btn">
+                View History
+              </button>
+              {timerDisabled && (
+                <span style={styles.timerDisabledNote}>Another commute is running</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div style={styles.section}>
+          <span style={styles.sectionLabel}>Stats</span>
+          {!stats || stats.count === 0 ? (
+            <div style={styles.placeholderBox}>
+              <span style={styles.placeholderText}>Record a trip to see stats</span>
+            </div>
+          ) : (
+            <div style={styles.statsCard}>
+              <div style={styles.statRow}>
+                <span style={styles.statLabel}>Trips recorded</span>
+                <span style={styles.statValue}>{stats.count}</span>
+              </div>
+              <div style={styles.statDivider} />
+              <div style={styles.statRow}>
+                <span style={styles.statLabel}>Average</span>
+                <span style={styles.statValue}>{formatDuration(stats.meanSeconds!)}</span>
+              </div>
+              <div style={styles.statDivider} />
+              <div style={styles.statRow}>
+                <span style={styles.statLabel}>p75 <span className="nl-stat-hint">(75% of trips finish within)</span></span>
+                <span style={styles.statValue}>{formatDuration(stats.p75Seconds!)}</span>
+              </div>
+              <div style={styles.statDivider} />
+              <div style={styles.statRow}>
+                <span style={styles.statLabel}>p90 <span className="nl-stat-hint">(90% of trips finish within)</span></span>
+                <span style={styles.statValue}>{formatDuration(stats.p90Seconds!)}</span>
+              </div>
+              <div style={styles.statDivider} />
+              <div style={styles.statRow}>
+                <span style={styles.statLabel}>Six sigma <span className="nl-stat-hint">(worst-case estimate)</span></span>
+                <span style={styles.statValue}>{formatDuration(stats.sixSigmaSeconds!)}</span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Live arrivals — grouped by stopName+direction so co-located trains share a card */}
         {commute.stops.length > 0 && (
@@ -63,25 +164,21 @@ export default function CommuteDetail({ commute, onClose }: Props) {
           </div>
         )}
 
-        {/* Stats — placeholder */}
-        <div style={styles.section}>
-          <span style={styles.sectionLabel}>Stats</span>
-          <div style={styles.placeholderBox}>
-            <span style={styles.placeholderText}>Trip stats coming soon</span>
-          </div>
-        </div>
-
-        {/* Start/Stop — placeholder */}
-        <div style={styles.section}>
-          <button style={styles.startButton} disabled>Start Commute</button>
-        </div>
-
         {/* MTA attribution — required by T&C */}
         <p style={styles.attribution}>
           Real-time arrival data obtained from MTA and served via our own server.
           Not guaranteed to be accurate, complete, or timely.
         </p>
       </div>
+
+      {showLogs && (
+        <CommuteLogsOverlay
+          commuteId={commute.id}
+          commuteName={commute.name}
+          onClose={() => setShowLogs(false)}
+          onLogDeleted={refreshStats}
+        />
+      )}
     </div>
   )
 }
@@ -267,21 +364,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     color: '#1a202c',
   },
-  content: {
-    maxWidth: '680px',
-    width: '100%',
-    margin: '2rem auto',
-    padding: '0 1.5rem 3rem',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2rem',
-  },
-  commuteName: {
-    margin: 0,
-    fontSize: '1.75rem',
-    fontWeight: 700,
-    color: '#1a202c',
-  },
   section: {
     display: 'flex',
     flexDirection: 'column',
@@ -298,39 +380,24 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: '#ffffff',
     borderRadius: '10px',
     border: '1px solid #e2e8f0',
-    padding: '1rem 1.25rem',
+    padding: '0.75rem 1.25rem',
     display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-  },
-  routeStop: {
-    display: 'flex',
+    flexWrap: 'wrap' as const,
     alignItems: 'center',
-    gap: '0.75rem',
-  },
-  routeDotGray: {
-    width: '10px',
-    height: '10px',
-    borderRadius: '50%',
-    backgroundColor: '#a0aec0',
-    flexShrink: 0,
-  },
-  routeDotBlue: {
-    width: '10px',
-    height: '10px',
-    borderRadius: '50%',
-    backgroundColor: '#3182ce',
-    flexShrink: 0,
-  },
-  routeLine: {
-    width: '2px',
-    height: '16px',
-    backgroundColor: '#e2e8f0',
-    marginLeft: '4px',
+    gap: '0.5rem',
   },
   routeAddress: {
     fontSize: '0.9375rem',
     color: '#1a202c',
+  },
+  routeArrow: {
+    fontSize: '1.75rem',
+    color: '#48bb78',
+    fontWeight: 900,
+    flexShrink: 0,
+    lineHeight: 1,
+    position: 'relative' as const,
+    top: '-2px',
   },
   stopCard: {
     backgroundColor: '#ffffff',
@@ -439,6 +506,34 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '0.75rem',
     color: '#cbd5e0',
   },
+  statsCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
+    border: '1px solid #e2e8f0',
+    overflow: 'hidden',
+  },
+  statRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0.75rem 1.25rem',
+  },
+  statDivider: {
+    height: '1px',
+    backgroundColor: '#f7fafc',
+    margin: '0 1.25rem',
+  },
+  statLabel: {
+    fontSize: '0.9375rem',
+    color: '#4a5568',
+  },
+  statValue: {
+    fontSize: '0.9375rem',
+    fontWeight: 600,
+    color: '#1a202c',
+    flexShrink: 0,
+    marginLeft: '1rem',
+  },
   placeholderBox: {
     backgroundColor: '#ffffff',
     borderRadius: '10px',
@@ -452,17 +547,9 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '0.9375rem',
     color: '#a0aec0',
   },
-  startButton: {
-    padding: '0.875rem',
-    fontSize: '1rem',
-    fontWeight: 600,
-    color: '#fff',
-    backgroundColor: '#48bb78',
-    border: 'none',
-    borderRadius: '10px',
-    cursor: 'not-allowed',
-    opacity: 0.5,
-    width: '100%',
+  timerDisabledNote: {
+    fontSize: '0.75rem',
+    color: '#a0aec0',
   },
   attribution: {
     margin: 0,

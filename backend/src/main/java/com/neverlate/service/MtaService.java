@@ -88,7 +88,14 @@ public class MtaService {
                     if (!entity.hasTripUpdate()) continue;
                     TripUpdate tu = entity.getTripUpdate();
                     String routeId = tu.getTrip().getRouteId();
-                    if (!lineIdSet.contains(routeId)) continue;
+                    // MTA appends suffixes during special service (e.g. "5X" express, "4D" skip-stop).
+                    // Accept exact match OR any lineId that is a prefix of routeId followed by letters.
+                    boolean matchesLine = lineIdSet.contains(routeId) ||
+                            lineIds.stream().anyMatch(lid ->
+                                    routeId.length() > lid.length() &&
+                                    routeId.startsWith(lid) &&
+                                    routeId.substring(lid.length()).matches("[A-Z]+"));
+                    if (!matchesLine) continue;
 
                     for (TripUpdate.StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
                         if (!fullStopId.equals(stu.getStopId())) continue;

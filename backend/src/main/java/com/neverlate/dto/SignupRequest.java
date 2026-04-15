@@ -1,8 +1,3 @@
-// Data Transfer Object for the signup request body.
-// Carries the email and password submitted by the user. Jakarta validation
-// annotations ensure the email is well-formed and neither field is blank
-// before the request reaches the service layer.
-
 package com.neverlate.dto;
 
 import jakarta.validation.constraints.Email;
