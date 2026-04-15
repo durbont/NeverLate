@@ -1,6 +1,6 @@
 // Spring Security configuration for NeverLate.
-// Disables CSRF (not needed for stateless JWT APIs), enables CORS for the
-// frontend dev server (localhost:5173), and sets session management to stateless.
+// Disables CSRF (not needed for stateless JWT APIs), enables CORS for all origins,
+// and sets session management to stateless.
 // The /api/auth/** endpoints are public; all other routes require a valid JWT.
 // The JwtAuthFilter is registered to run before the default username/password filter.
 
@@ -49,10 +49,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
