@@ -5,20 +5,22 @@
 
 import axios from 'axios'
 
+const API_URL = import.meta.env.VITE_API_URL || ''
+
 export interface AuthResponse {
   token: string
   email: string
 }
 
 export async function signup(email: string, password: string): Promise<AuthResponse> {
-  const response = await axios.post<AuthResponse>('/api/auth/signup', { email, password })
+  const response = await axios.post<AuthResponse>(`${API_URL}/api/auth/signup`, { email, password })
   localStorage.setItem('token', response.data.token)
   localStorage.setItem('email', response.data.email)
   return response.data
 }
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
-  const response = await axios.post<AuthResponse>('/api/auth/login', { email, password })
+  const response = await axios.post<AuthResponse>(`${API_URL}/api/auth/login`, { email, password })
   localStorage.setItem('token', response.data.token)
   localStorage.setItem('email', response.data.email)
   return response.data
