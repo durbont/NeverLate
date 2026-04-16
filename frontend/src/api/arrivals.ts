@@ -6,6 +6,7 @@ export interface Arrival {
   lineId: string
   arrivalTime: number   // Unix epoch seconds, from MTA feed (unmodified)
   minutesAway: number
+  destinationStopId: string
 }
 
 export interface ArrivalsResponse {

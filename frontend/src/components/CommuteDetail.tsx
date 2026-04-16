@@ -6,7 +6,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { Commute } from '../api/commutes'
-import { getLineById } from '../data/subway-data'
+import { getLineById, subwayLines } from '../data/subway-data'
 import { fetchArrivals, Arrival, ArrivalsResponse } from '../api/arrivals'
 import { fetchCommuteStats, CommuteStats } from '../api/logs'
 import CommuteLogsOverlay from './CommuteLogsOverlay'
@@ -204,9 +204,18 @@ function StopArrivalsSection({ group }: { group: StopGroup }) {
 
   async function load() {
     try {
-      // Fetch arrivals for each unique stopId in the group, then merge and sort
+      // Group entries by stopId so lines sharing a platform (e.g. 4 & 5 at Union Sq)
+      // are fetched in one call, then merge all results and sort chronologically.
+      const byStop = group.entries.reduce((acc, e) => {
+        if (!acc[e.stopId]) acc[e.stopId] = []
+        acc[e.stopId].push(e.lineId)
+        return acc
+      }, {} as Record<string, string[]>)
+
       const results = await Promise.all(
-        group.entries.map(e => fetchArrivals(e.stopId, group.direction, [e.lineId]))
+        Object.entries(byStop).map(([stopId, lineIds]) =>
+          fetchArrivals(stopId, group.direction, lineIds)
+        )
       )
       const merged = results.flatMap(r => r.arrivals)
       merged.sort((a, b) => a.arrivalTime - b.arrivalTime)
@@ -278,7 +287,7 @@ function StopArrivalsSection({ group }: { group: StopGroup }) {
         <>
           <div style={styles.arrivalList}>
             {(expanded ? arrivals : arrivals.slice(0, COLLAPSED_COUNT)).map((arrival, i) => (
-              <ArrivalRow key={i} arrival={arrival} direction={group.direction} />
+              <ArrivalRow key={i} arrival={arrival} />
             ))}
           </div>
           {arrivals.length > COLLAPSED_COUNT && (
@@ -299,10 +308,16 @@ function StopArrivalsSection({ group }: { group: StopGroup }) {
   )
 }
 
-function ArrivalRow({ arrival, direction }: { arrival: Arrival; direction: string }) {
+function ArrivalRow({ arrival }: { arrival: Arrival }) {
   const line = getLineById(arrival.lineId)
   const label = arrival.minutesAway < 1 ? 'Due' : `${arrival.minutesAway} min`
-  const destination = direction === 'N' ? (line?.terminalN ?? '') : (line?.terminalS ?? '')
+
+  // Resolve live destination stop name from the GTFS stop ID the feed provides.
+  // Falls back to empty string if the stop isn't in our data.
+  const matchedStop = arrival.destinationStopId
+    ? subwayLines.flatMap(l => l.stops).find(s => s.id === arrival.destinationStopId)
+    : undefined
+  const destination = matchedStop?.name ?? ''
 
   return (
     <div style={styles.arrivalRow}>
