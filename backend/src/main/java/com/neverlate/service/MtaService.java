@@ -97,7 +97,14 @@ public class MtaService {
                                     routeId.substring(lid.length()).matches("[A-Z]+"));
                     if (!matchesLine) continue;
 
-                    for (TripUpdate.StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
+                    // Get the actual destination: last stop in this trip's updates
+                    List<TripUpdate.StopTimeUpdate> allStops = tu.getStopTimeUpdateList();
+                    String lastStopRaw = allStops.isEmpty() ? "" :
+                            allStops.get(allStops.size() - 1).getStopId();
+                    // Strip N/S suffix to get the parent stop ID
+                    String destinationStopId = lastStopRaw.replaceAll("[NS]$", "");
+
+                    for (TripUpdate.StopTimeUpdate stu : allStops) {
                         if (!fullStopId.equals(stu.getStopId())) continue;
 
                         long arrivalTime = stu.hasArrival()
@@ -109,7 +116,7 @@ public class MtaService {
                         int minutesAway = (int) ((arrivalTime - now) / 60);
                         if (minutesAway > 90) continue; // cap at 90 min lookahead
 
-                        arrivals.add(new ArrivalDto(routeId, arrivalTime, minutesAway));
+                        arrivals.add(new ArrivalDto(routeId, arrivalTime, minutesAway, destinationStopId));
                     }
                 }
             } catch (Exception e) {

@@ -6,6 +6,7 @@
 import { useState, FormEvent } from 'react'
 import { subwayLines, getLineById } from '../data/subway-data'
 import { Commute } from '../api/commutes'
+import './CommuteModal.css'
 
 interface StopEntry {
   lineId: string
@@ -149,7 +150,7 @@ export default function EditCommuteModal({ commute, onClose, onSubmit }: Props) 
 
             {stops.length === 0 && (
               <p style={styles.noStopsText}>
-                Add trains to see live arrivals. Trains at the same station will be grouped automatically.
+                Add trains to see live arrivals. Trains at the same station will be grouped automatically. If multiple lines run through your stop (e.g. 4, 5, and 6 at Union Sq), add each line separately.
               </p>
             )}
 
@@ -187,8 +188,8 @@ export default function EditCommuteModal({ commute, onClose, onSubmit }: Props) 
                   </div>
 
                   {lineData && (
-                    <div style={styles.stopRow}>
-                      <div style={{ ...styles.stopField, flex: 2 }}>
+                    <div className="nl-stop-row">
+                      <div className="nl-stop-field-stop">
                         <label style={styles.smallLabel}>Stop</label>
                         <select
                           value={stop.stopId}
@@ -200,9 +201,9 @@ export default function EditCommuteModal({ commute, onClose, onSubmit }: Props) 
                           ))}
                         </select>
                       </div>
-                      <div style={styles.stopField}>
+                      <div className="nl-stop-field-dir">
                         <label style={styles.smallLabel}>Direction</label>
-                        <div style={styles.directionToggle}>
+                        <div style={styles.directionToggle} className="nl-direction-toggle">
                           <button
                             type="button"
                             onClick={() => updateDirection(i, 'N')}
@@ -234,6 +235,12 @@ export default function EditCommuteModal({ commute, onClose, onSubmit }: Props) 
                 </div>
               )
             })}
+
+            {stops.length > 0 && (
+              <button type="button" onClick={addStop} style={styles.addStopButton}>
+                + Add Train
+              </button>
+            )}
           </div>
 
           {error && <p style={styles.error}>{error}</p>}

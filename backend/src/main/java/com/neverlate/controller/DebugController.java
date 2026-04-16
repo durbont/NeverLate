@@ -55,10 +55,11 @@ public class DebugController {
         return result;
     }
 
+    // GET /api/debug/stop?stopId=421N&line=4  — which routes stop at a specific stop ID in a given line's feed
     @GetMapping("/stop")
-    public Map<String, Object> debugStop(@RequestParam String stopId) throws Exception {
-        // Search the 1-7/S feed since that covers 4/5/6
-        FeedMessage feed = mtaService.fetchFeedPublic("6");
+    public Map<String, Object> debugStop(@RequestParam String stopId,
+                                         @RequestParam(defaultValue = "6") String line) throws Exception {
+        FeedMessage feed = mtaService.fetchFeedPublic(line);
         List<String> matches = new ArrayList<>();
 
         for (FeedEntity entity : feed.getEntityList()) {
@@ -77,6 +78,7 @@ public class DebugController {
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("stopId", stopId);
+        result.put("feedLine", line);
         result.put("matchingTrips", matches);
         return result;
     }

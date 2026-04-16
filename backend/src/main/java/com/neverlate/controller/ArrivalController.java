@@ -25,8 +25,9 @@ public class ArrivalController {
     public ResponseEntity<ArrivalsResponse> getArrivals(
             @RequestParam String stopId,
             @RequestParam String direction,
-            @RequestParam List<String> lineIds) {
-        ArrivalsResponse response = mtaService.getArrivals(stopId, direction, lineIds);
+            @RequestParam String lineIds) {
+        List<String> lineIdList = List.of(lineIds.split(","));
+        ArrivalsResponse response = mtaService.getArrivals(stopId, direction, lineIdList);
         return ResponseEntity.ok(response);
     }
 }
